@@ -41,13 +41,15 @@ except Exception as e:
     st.stop()
 
 # ====================================================================
-# 3. 모델 호출 함수 정의 (Vertex AI 튜닝 모델 전용)
+# 3. 모델 호출 함수 정의 (개인 엔드포인트 전용 풀 경로 적용)
 # ====================================================================
 def predict_law_translation(text):
-    # vertexai=True 모드에서는 주소를 길게 안 쓰고 엔드포인트 ID만 깔끔하게 넘겨줍니다.
+    # [수정] 최신 SDK가 오해하지 않도록 프로젝트와 리전이 포함된 '풀 경로'를 완성합니다.
+    full_model_path = f"projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}"
+    
     try:
         response = client.models.generate_content(
-            model=f"endpoints/{ENDPOINT_ID}", # 👈 4로 시작하는 ID만 쏙 빌드
+            model=full_model_path,  # 👈 endpoints/... 대신 풀 경로 변수를 그대로 주입
             contents=text,
             config=types.GenerateContentConfig(
                 temperature=0.2,
@@ -56,7 +58,7 @@ def predict_law_translation(text):
         return response.text
     except Exception as e:
         st.error(f"❌ 구글 API 호출 실패: {e}")
-        st.info("💡 만약 여기서 에러가 난다면 서비스 계정에 'Vertex AI User' 권한이 빠졌거나 LOCATION 오타일 확률이 높습니다.")
+        st.info("💡 만약 여기서 404가 또 뜬다면 LOCATION(리전)이 us-central1이 맞는지 콘솔에서 최종 확인해보셔야 합니다.")
         return None
 # ====================================================================
 # 4. 챗봇 UI 및 대화 처리
