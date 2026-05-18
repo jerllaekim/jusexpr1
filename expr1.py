@@ -30,24 +30,34 @@ aiplatform.init(project=PROJECT_ID, location=LOCATION, credentials=credentials)
 # 3. 모델 호출 함수 정의
 # ====================================================================
 def predict_law_translation(text):
-    # 만능열쇠(인증)를 들고 4...번 엔드포인트 사물함 주소로 찾아갑니다.
+    # 4...번 엔드포인트 주소로 찾아갑니다.
     endpoint = aiplatform.Endpoint(
         endpoint_name=f"projects/{PROJECT_ID}/locations/{LOCATION}/endpoints/{ENDPOINT_ID}"
     )
     
-    # Gemini 튜닝 모델이 인식할 수 있는 정석 포맷으로 입력값 포장
+    # [수정] 복잡한 Value() 포장 대신, 파이썬 기본 딕셔너리 구조로 직접 전달합니다.
     instances = [
-        json_format.ParseDict({
-            "contents": [{"role": "user", "parts": [{"text": text}]}]
-        }, Value())
+        {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": text}]
+                }
+            ]
+        }
     ]
     
-    # 구글 서버에 요청 후 결과 받기
+    # 구글 서버에 예측 요청
     response = endpoint.predict(instances=instances)
     
-    # 모델의 첫 번째 답변 텍스트만 추출
-    return response.predictions[0]
-
+    # [수정] 결과가 프로토콜 버퍼 형태로 돌아오므로 정석대로 첫 번째 답변의 텍스트를 추출합니다.
+    # 일반적으로 Gemini 계열 엔드포인트는 predictions[0] 내에 대답 텍스트를 담아 보냅니다.
+    try:
+        # 응답 구조가 복잡할 경우를 대비해 안전하게 텍스트 추출 시도
+        return response.predictions[0]['candidates'][0]['content']['parts'][0]['text']
+    except (KeyError, TypeError, IndexError):
+        # 만약 구조가 단순화되어 들어오는 환경이라면 기존 방식대로 반환
+        return response.predictions[0]
 # ====================================================================
 # 4. Streamlit 챗봇 UI 
 # ====================================================================
