@@ -29,10 +29,14 @@ except Exception as e:
 # ====================================================================
 # 2. 족보 일치 핵심 변수 정의 (친구 프로젝트 ID 및 튜닝 모델 ID 매칭)
 # ====================================================================
-PROJECT_ID = "groovy-design-496111-h1"     # 👈 친구분 GCP 프로젝트 ID 일치화
-LOCATION = "us-central1"                   # Vertex AI 파인튜닝 기본 리전
-MY_TUNED_MODEL = "groovy-design-496111-h1-5da41a59f7fc" # 👈 정래님의 30만 문장 찐 뇌 ID
+Python
+PROJECT_ID = "groovy-design-496111-h1"     
+LOCATION = "us-central1"                   
+ENDPOINT_ID = "36530724077043712"        
 
+# 🎯 [핵심 수정] 그냥 이름만 쓰면 구글이 publishers/google/models 하위에서 찾다가 404를 냅니다.
+# 앞에 'tunedModels/'를 붙여주어야 내 Vertex AI 커스텀 학습 저장소로 직행합니다.
+MY_TUNED_MODEL = "tunedModels/groovy-design-496111-h1-5da41a59f7fc"
 # 구글 Vertex AI 클라이언트 초기화 
 try:
     client = genai.Client(
