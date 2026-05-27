@@ -48,7 +48,7 @@ def get_data_from_github():
     return {k: requests.get(v).text for k, v in urls.items() if requests.get(v).status_code == 200}
 
 # 4. UI 탭 구성
-st.title("🧪 한-러 법률 번역 및 분석 샌드박스")
+st.title("한-러 법률 번역 및 분석 샌드박스")
 tab1, tab2, tab3 = st.tabs(["💬 법률 질문/분석", "✍️ 번역 연습", "🚀 파인튜닝 번역"])
 
 with tab1:
