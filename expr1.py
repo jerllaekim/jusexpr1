@@ -75,7 +75,6 @@ with tab2:
 
 with tab3:
     st.subheader("파인튜닝 번역 실행")
-    title = st.text_input("안건명")
     ctx = st.text_area("번역할 본문")
     if st.button("번역 실행"):
         prompt = f"안건: {title}\n본문: {ctx}\n위 본문을 법률 용어에 맞게 러시아어로 번역하시오."
