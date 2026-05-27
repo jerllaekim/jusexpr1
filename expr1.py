@@ -1,36 +1,34 @@
 import streamlit as st
 import requests
 import random
-import json
 from google.oauth2 import service_account
 from google import genai as genai_vtx
 import google.generativeai as genai_std
 
-# 1. UI 설정
-st.set_page_config(page_title="한-러 법률 번역 실험실", layout="wide")
-st.title("🧪 한-러 법률 및 해석례 번역 실험실")
-
-# 2. 인증 설정 (가장 안전한 로드 방식)
+# 1. 인증 및 클라이언트 로드 (낱개 Secrets 기반)
 def get_gcp_creds():
-    # Secrets 값을 dict로 안전하게 변환
-    info = dict(st.secrets["gcp_service_account"])
-    # private_key의 줄바꿈 문자 복원
-    if 'private_key' in info and '\\n' in info['private_key']:
-        info['private_key'] = info['private_key'].replace('\\n', '\n')
+    info = {
+        "type": st.secrets["GCP_TYPE"],
+        "project_id": st.secrets["GCP_PROJECT_ID"],
+        "private_key_id": st.secrets["GCP_PRIVATE_KEY_ID"],
+        "private_key": st.secrets["GCP_PRIVATE_KEY"].replace('\\n', '\n'),
+        "client_email": st.secrets["GCP_CLIENT_EMAIL"],
+        "client_id": st.secrets["GCP_CLIENT_ID"],
+        "token_uri": st.secrets["GCP_TOKEN_URI"]
+    }
     return service_account.Credentials.from_service_account_info(info)
 
-# 클라이언트 초기화
-creds = get_gcp_creds()
+# 클라이언트 생성
 vtx_client = genai_vtx.Client(
     vertexai=True, 
-    project="groovy-design-496111-h1", 
+    project=st.secrets["GCP_PROJECT_ID"], 
     location="us-central1", 
-    credentials=creds
+    credentials=get_gcp_creds()
 )
 genai_std.configure(api_key=st.secrets["GEMINI_API_KEY"])
 model_std = genai_std.GenerativeModel('gemini-1.5-flash')
 
-# 3. 데이터 로드
+# 2. 데이터 로드
 @st.cache_data
 def get_data_from_github():
     urls = {
@@ -40,7 +38,10 @@ def get_data_from_github():
     }
     return {k: requests.get(v).text for k, v in urls.items() if requests.get(v).status_code == 200}
 
-# 4. 기능 탭
+# 3. UI
+st.set_page_config(page_title="한-러 법률 번역 실험실", layout="wide")
+st.title("🧪 한-러 법률 및 해석례 번역 실험실")
+
 tab1, tab2, tab3 = st.tabs(["💬 질문하기", "✍️ 번역 연습", "🚀 파인튜닝 번역"])
 
 with tab1:
